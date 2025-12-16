@@ -10,7 +10,6 @@ const User = sequelize.define<UserModel>('user', {
     secondName: { type: DataTypes.STRING, allowNull: true },
     avatar: { type: DataTypes.STRING, allowNull: true },
     bio: { type: DataTypes.TEXT, allowNull: true },
-    role: { type: DataTypes.ENUM('USER', 'AUTHOR', 'ADMIN'), defaultValue: 'USER', allowNull: false },
     emailVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
     activationLink: { type: DataTypes.TEXT }
 })

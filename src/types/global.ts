@@ -12,12 +12,13 @@ declare global {
 export interface MyJwtPayload extends JwtPayload {
   id: number,
   email: string,
-  email_is_verified: boolean;
+  roles: string[];
+  emailVerified: boolean;
 }
 
 export interface IUserDto {
   id: number
   email: string
-  role: 'user' | 'agent' | 'admin'
+  roles: string[]
   emailVerified: boolean
 }

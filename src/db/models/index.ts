@@ -10,6 +10,8 @@ import Payment from "./Payment";
 import ActivityLog from "./ActivityLog";
 import Favorite from "./Favorite";
 import SupportTicket from "./SupportTicket";
+import Role from './Role'
+import UserRole from './UserRole'
 
 /* ----------------- TOKEN ----------------- */
 User.hasOne(Token, { foreignKey: "userId", as: "token" });
@@ -78,6 +80,10 @@ ActivityLog.belongsTo(User, { foreignKey: "userId", as: "user" });
 User.hasMany(SupportTicket, { foreignKey: "userId", as: "supportTickets" });
 SupportTicket.belongsTo(User, { foreignKey: "userId", as: "user" });
 
+/* ----------------- ROLES ----------------- */
+User.belongsToMany(Role, { through: UserRole, foreignKey: 'userId', otherKey: 'roleId', as: 'roles' });
+Role.belongsToMany(User, { through: UserRole, foreignKey: 'roleId', otherKey: 'userId', as: 'users' });
+
 export {
   User,
   Token,
@@ -90,5 +96,7 @@ export {
   Payment,
   ActivityLog,
   Favorite,
-  SupportTicket
+  SupportTicket,
+  Role,
+  UserRole
 };
