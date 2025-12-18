@@ -9,7 +9,7 @@ import { RoleModel } from "../types/models";
 import sequelize from '../db/config'
 
 class UserService {
-    async registration(email: string, password: string) {
+    async registration(firstName: string, email: string, password: string) {
         const t = await sequelize.transaction()
         const candidate = await User.findOne({ where: { email }, transaction: t })
 
@@ -20,7 +20,7 @@ class UserService {
         const hashPassword = await bcrypt.hash(password, 12)
         const activationLink = uuidv4()
 
-        const user = await User.create({ email, passwordHash: hashPassword, activationLink }, { transaction: t })
+        const user = await User.create({ firstName, email, passwordHash: hashPassword, activationLink }, { transaction: t })
 
         // Назначаем роль USER
         const userRole = await Role.findOne({ where: { value: "USER" }, transaction: t },)
@@ -52,10 +52,7 @@ class UserService {
         const userDto = new UserDto(userWithRoles)
         const tokens = tokenService.generateTokens({ ...userDto })
         await tokenService.saveToken(userDto.id, tokens.refreshToken)
-
-        console.log(userDto.roles);
-
-
+        
         return {
             ...tokens,
             user: userDto
@@ -73,7 +70,14 @@ class UserService {
 
     async login(email: string, password: string) {
         const user = await User.findOne({
-            where: { email }, 
+            where: { email }
+        })
+
+        if (!user) {
+            throw ApiError.BadRequest(`Пользоватлеь с почтовым адресом ${email} не найден`)
+        }
+
+        const userWithRoles = await User.findByPk(user.id, {
             include: {
                 model: Role,
                 as: 'roles',
@@ -82,8 +86,8 @@ class UserService {
             }
         })
 
-        if (!user) {
-            throw ApiError.BadRequest(`Пользоватлеь с почтовым адресом ${email} не найден`)
+        if (!userWithRoles) {
+            throw ApiError.BadRequest("Ошибка при получении ролей")
         }
 
         const isPasswordEquals = await bcrypt.compare(password, user.passwordHash)
@@ -91,7 +95,7 @@ class UserService {
             throw ApiError.BadRequest('Неверный пароль')
         }
 
-        const userDto = new UserDto(user)
+        const userDto = new UserDto(userWithRoles)
         const tokens = tokenService.generateTokens({ ...userDto })
 
         await tokenService.saveToken(userDto.id, tokens.refreshToken)
